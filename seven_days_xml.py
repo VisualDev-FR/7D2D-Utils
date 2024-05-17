@@ -85,7 +85,12 @@ def block(block_name: str):
 
 @click.command
 @click.argument("file", required=True)
-@click.option("-e", "--editor", default='""', help="The editor which with you want to open the file (must be added to your path env variable)")
+@click.option(
+    "-e",
+    "--editor",
+    default='""',
+    help="The editor which with you want to open the file (must be added to your path env variable)",
+)
 def open(file: str, editor: str):
     """
     Open a given xml file with the default program defined from xml files.
@@ -99,6 +104,7 @@ def open(file: str, editor: str):
         return
 
     os.system(f'start {editor} "{absolute_path}"')
+
 
 @click.command
 def ls_xml():
