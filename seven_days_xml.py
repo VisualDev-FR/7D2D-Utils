@@ -99,3 +99,18 @@ def open(file: str, editor: str):
         return
 
     os.system(f'start {editor} "{absolute_path}"')
+
+@click.command
+def ls_xml():
+    """
+    Display the list of all available xml files
+    """
+
+    # files = os.listdir(SD_CONFIG_DIR)
+    xml_files = []
+
+    for root, dirs, files in os.walk(SD_CONFIG_DIR):
+        for file in files:
+            xml_files.append(Path(root, file).relative_to(SD_CONFIG_DIR).__str__())
+
+    click.echo("\n".join(xml_files))
