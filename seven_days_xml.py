@@ -81,3 +81,21 @@ def block(block_name: str):
     target_block = blocks_root.find(f"./block[@name='{block_name}']")
 
     click.echo(prettify_xml(target_block))
+
+
+@click.command
+@click.argument("file", required=True)
+@click.option("-e", "--editor", default='""', help="The editor which with you want to open the file (must be added to your path env variable)")
+def open(file: str, editor: str):
+    """
+    Open a given xml file with the default program defined from xml files.
+
+    FILE:    The relative path to the target file, from the folder 7DaysToDie/Data/Config
+    """
+    absolute_path = Path(SD_CONFIG_DIR, file)
+
+    if not absolute_path.exists():
+        click.echo(f"Invalid file: {file}")
+        return
+
+    os.system(f'start {editor} "{absolute_path}"')
