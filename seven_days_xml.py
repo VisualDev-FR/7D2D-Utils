@@ -2,9 +2,11 @@ import os
 import xml.dom.minidom as minidom
 from xml.etree.ElementTree import Element
 from pathlib import Path
-import lxml.etree as ET
+import json
+from pprint import pprint
 
 import click
+import lxml.etree as ET
 
 SD_DIR = os.environ["PATH_7D2D"]
 
@@ -27,7 +29,9 @@ def prettify_xml(element: Element, with_comments: bool = True) -> str:
 @click.command
 @click.argument("file", required=True)
 @click.argument("request", required=True)
-@click.option("--no-comments", is_flag=True, help="Enable this option to ignore comments.")
+@click.option(
+    "--no-comments", is_flag=True, help="Enable this option to ignore comments."
+)
 def xpath(file: str, request: str, no_comments: bool) -> Element:
     """
     Send an xpath request to a given xml file
@@ -44,7 +48,9 @@ def xpath(file: str, request: str, no_comments: bool) -> Element:
     try:
         target_element = ET.parse(absolute_path).xpath(request)
 
-        prettified = [prettify_xml(element, not no_comments) for element in target_element]
+        prettified = [
+            prettify_xml(element, not no_comments) for element in target_element
+        ]
 
         click.echo("\n".join(prettified))
         click.echo(f"{len(target_element)} results.")
@@ -54,12 +60,7 @@ def xpath(file: str, request: str, no_comments: bool) -> Element:
 
 
 @click.command
-@click.option(
-    "--name",
-    type=str,
-    required=False,
-    help="Filter blocks by name"
-)
+@click.option("--name", type=str, required=False, help="Filter blocks by name")
 @click.option(
     "--ls",
     is_flag=True,
@@ -101,7 +102,7 @@ def block(name: str, ls: bool):
     default='""',
     help="The editor which with you want to open the file (must be added to your path env variable)",
 )
-def open(file: str, editor: str):
+def reveal(file: str, editor: str):
     """
     Open a given xml file with the default program defined from xml files.
 
@@ -130,10 +131,44 @@ def ls_xml():
 
     click.echo("\n".join(xml_files))
 
-    absolute_path = Path(SD_CONFIG_DIR, "blocks.xml")
 
-    target_element = ET.parse(absolute_path).findall("./block[@name='terrDirt']")
+@click.command
+@click.argument("keyword")
+@click.option("--search", is_flag=True)
+def getlocal(keyword: str, search: bool):
+    """
+    Display translations for a given keyword from Localization.txt
+    """
+    localization_path = Path(SD_CONFIG_DIR, "Localization.txt")
 
-    prettified = [prettify_xml(element) for element in target_element]
+    with open(localization_path, "rb") as reader:
+        file_content = reader.readlines()
 
-    click.echo("\n".join(prettified))
+    headers = file_content[0].decode("utf-8")[:-2].split(",")
+
+    translations = dict()
+    matching_keywords = set() if search else set(keyword)
+
+    for datas in file_content[1:]:
+
+        splitted = datas.decode("utf-8")[:-2].split(",")
+        key = splitted[0]
+        translations[key] = splitted
+
+        if search and keyword.lower() in key.lower():
+            matching_keywords.add(key)
+
+    for kw in matching_keywords:
+
+        if kw not in translations:
+            continue
+
+        datas = translations[kw]
+
+        for lang, value in zip(headers, datas):
+            click.echo(f"{lang:.<15} {value}")
+
+        click.echo()
+
+    if search:
+        print(f"{len(matching_keywords)} results.")
