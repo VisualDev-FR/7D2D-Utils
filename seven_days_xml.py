@@ -1,8 +1,8 @@
 import os
-import xml.etree.ElementTree as ET
 import xml.dom.minidom as minidom
 from xml.etree.ElementTree import Element
 from pathlib import Path
+import lxml.etree as ET
 
 import click
 
@@ -11,38 +11,24 @@ SD_DIR = os.environ["PATH_7D2D"]
 SD_CONFIG_DIR = Path(SD_DIR, "Data/Config")
 
 
-def prettify_xml(element: Element) -> str:
+def prettify_xml(element: Element, with_comments: bool = True) -> str:
     """
     TODOC
     """
-    str_element = ET.tostring(element, encoding="utf-8", method="xml")
 
-    pretty_element = minidom.parseString(str_element).toprettyxml(newl="")
+    # c14n method is mandatory to allow ignoring comments
+    str_element = ET.tostring(element, method="c14n", with_comments=with_comments)
+
+    pretty_element = minidom.parseString(str_element).toprettyxml(newl="", indent="")
 
     return pretty_element[22:]
-
-
-def send_xpath(file: str, request: str) -> Element:
-    """
-    TODOC
-    """
-    absolute_path = Path(SD_CONFIG_DIR, file)
-
-    if not absolute_path.exists():
-        click.echo(f"Invalid file: {file}")
-        return
-
-    root_element = ET.parse(absolute_path).getroot()
-
-    target_element = root_element.find(request)
-
-    return target_element
 
 
 @click.command
 @click.argument("file", required=True)
 @click.argument("request", required=True)
-def xpath(file: str, request: str) -> Element:
+@click.option("--no-comments", is_flag=True, help="Enable this option to ignore comments.")
+def xpath(file: str, request: str, no_comments: bool) -> Element:
     """
     Send an xpath request to a given xml file
 
@@ -55,30 +41,54 @@ def xpath(file: str, request: str) -> Element:
         click.echo(f"Invalid file: {file}")
         return
 
-    root_element = ET.parse(absolute_path).getroot()
+    try:
+        target_element = ET.parse(absolute_path).xpath(request)
 
-    target_element = root_element.find(request)
+        prettified = [prettify_xml(element, not no_comments) for element in target_element]
 
-    click.echo(prettify_xml(target_element))
+        click.echo("\n".join(prettified))
+        click.echo(f"{len(target_element)} results.")
+
+    except Exception as e:
+        click.echo(f"Bad request: {e.__repr__()}")
 
 
 @click.command
-@click.argument(
-    "block_name",
+@click.option(
+    "--name",
     type=str,
-    required=True,
+    required=False,
+    help="Filter blocks by name"
 )
-def block(block_name: str):
+@click.option(
+    "--ls",
+    is_flag=True,
+    help="Enable this option to display all available blocks.",
+)
+def block(name: str, ls: bool):
     """
     Diplay block datas from a given block name.
-
-    BLOCK_NAME: the name of the block you want to display
     """
     blocks_path = Path(SD_CONFIG_DIR, "blocks.xml")
 
-    blocks_root = ET.parse(blocks_path).getroot()
+    blocks_tree = ET.parse(blocks_path)
 
-    target_block = blocks_root.find(f"./block[@name='{block_name}']")
+    if ls:
+        all_blocks = blocks_tree.findall(".//block")
+        for block in all_blocks:
+            click.echo(block.attrib["name"])
+        click.echo(f"{len(all_blocks)} Results.")
+        return
+
+    if name is not None:
+        target_block = blocks_tree.find(f"./block[@name='{name}']")
+
+    else:
+        raise click.exceptions.BadParameter("name or xpath option must be specified.")
+
+    if target_block is None:
+        click.echo(f"Not result for '{name}'")
+        return
 
     click.echo(prettify_xml(target_block))
 
@@ -112,7 +122,6 @@ def ls_xml():
     Display the list of all available xml files
     """
 
-    # files = os.listdir(SD_CONFIG_DIR)
     xml_files = []
 
     for root, dirs, files in os.walk(SD_CONFIG_DIR):
@@ -120,3 +129,11 @@ def ls_xml():
             xml_files.append(Path(root, file).relative_to(SD_CONFIG_DIR).__str__())
 
     click.echo("\n".join(xml_files))
+
+    absolute_path = Path(SD_CONFIG_DIR, "blocks.xml")
+
+    target_element = ET.parse(absolute_path).findall("./block[@name='terrDirt']")
+
+    prettified = [prettify_xml(element) for element in target_element]
+
+    click.echo("\n".join(prettified))
