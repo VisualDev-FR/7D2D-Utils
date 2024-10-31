@@ -1,3 +1,4 @@
+import shutil
 import os
 import xml.dom.minidom as minidom
 from xml.etree.ElementTree import Element
@@ -7,6 +8,7 @@ from pprint import pprint
 
 import click
 import lxml.etree as ET
+
 
 SD_DIR = os.environ["PATH_7D2D"]
 
@@ -104,7 +106,7 @@ def block(name: str, ls: bool):
 )
 def reveal(file: str, editor: str):
     """
-    Open a given xml file with the default program defined from xml files.
+    Open a given xml file with the default program.
 
     FILE:    The relative path to the target file, from the folder 7DaysToDie/Data/Config
     """
@@ -172,3 +174,52 @@ def getlocal(keyword: str, search: bool):
 
     if search:
         print(f"{len(matching_keywords)} results.")
+
+
+@click.command
+@click.argument("mod-name")
+def new(mod_name: str):
+    """
+    Creates a new 7D2D Modding project
+    """
+    MOD_NAME_PROP = "@MODNAME"
+    DATAS = {MOD_NAME_PROP: mod_name}
+
+    starter_dir = Path(Path(__file__).parent, "starter")
+
+    if Path(mod_name).exists():
+        click.echo(f"Error: A folder with name '{mod_name}' already exists")
+        return
+
+    # fmt: off
+    os.makedirs(mod_name)
+    os.makedirs(Path(mod_name, "Config"))
+    os.makedirs(Path(mod_name, "Resources"))
+    os.makedirs(Path(mod_name, "Scripts"))
+    os.makedirs(Path(mod_name, "Harmony"))
+    os.makedirs(Path(mod_name, "UIAtlas/ItemIconAtlas"))
+
+    shutil.copytree(Path(starter_dir, "Helpers"), Path(mod_name, "Helpers"))
+    shutil.copy(Path(starter_dir, "ModInfo.xml"), Path(mod_name, "ModInfo.xml"))
+    shutil.copy(Path(starter_dir, ".csproj"), Path(mod_name, f"{mod_name}.csproj"))
+    shutil.copy(Path(starter_dir, "gitignore.template"), Path(mod_name, ".gitignore"))
+    shutil.copy(Path(starter_dir, "ModApi.cs"), Path(mod_name, "Harmony/ModApi.cs"))
+    # fmt: on
+
+    def render_template(filename: Path, datas: dict):
+
+        with open(filename, "r") as reader:
+            content = reader.read()
+
+        for key, value in datas.items():
+            content = content.replace(key, value)
+
+        with open(filename, "w") as writer:
+            writer.write(content)
+
+    render_template(Path(mod_name, f"{mod_name}.csproj"), DATAS)
+    render_template(Path(mod_name, "ModInfo.xml"), DATAS)
+    render_template(Path(mod_name, "Harmony/ModApi.cs"), DATAS)
+    render_template(Path(mod_name, "Helpers/compile.cmd"), DATAS)
+
+    os.system(f"git init {Path(mod_name)}")

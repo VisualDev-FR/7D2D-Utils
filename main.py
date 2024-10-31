@@ -6,7 +6,9 @@ from seven_days_xml import (
     reveal,
     ls_xml,
     getlocal,
+    new,
 )
+
 
 @click.group()
 def Seven_days_utils():
@@ -21,6 +23,7 @@ Seven_days_utils.add_command(xpath)
 Seven_days_utils.add_command(reveal)
 Seven_days_utils.add_command(ls_xml)
 Seven_days_utils.add_command(getlocal)
+Seven_days_utils.add_command(new)
 
 
 if __name__ == "__main__":

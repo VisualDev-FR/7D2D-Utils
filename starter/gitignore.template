@@ -1,9 +1,7 @@
-env/
-obj/
 .vscode
 .vs
+obj
 *.zip
 *.dll
 *.pdb
 *.sln
-*.pyc

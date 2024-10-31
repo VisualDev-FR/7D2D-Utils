@@ -1,5 +1,5 @@
 @echo off
 
-call "%~dp0env\Scripts\activate"
+call "%~dp0\env\Scripts\activate"
 
 python "%~dp0\main.py" %*
