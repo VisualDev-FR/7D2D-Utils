@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <xml>
 	<Name value="@MODNAME" />
-	<DisplayName value=""/>
+	<DisplayName value="@MODNAME" />
 	<Description value="" />
 	<Author value="" />
 	<Version value="0.0.0" />
