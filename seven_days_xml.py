@@ -197,7 +197,7 @@ def new(mod_name: str):
     os.makedirs(Path(mod_name, "Resources"))
     os.makedirs(Path(mod_name, "Scripts"))
     os.makedirs(Path(mod_name, "Harmony"))
-    os.makedirs(Path(mod_name, "UIAtlas/ItemIconAtlas"))
+    os.makedirs(Path(mod_name, "UIAtlases/ItemIconAtlas"))
 
     shutil.copytree(Path(starter_dir, "Helpers"), Path(mod_name, "Helpers"))
     shutil.copy(Path(starter_dir, "ModInfo.xml"), Path(mod_name, "ModInfo.xml"))
