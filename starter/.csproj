@@ -67,7 +67,11 @@
 
     <!-- scripts -->
     <ItemGroup>
-        <Compile Include="Harmony/ModApi.cs" />
+        <Compile Include=".\**\*.cs" />
+        <Compile Remove=".\**\obj\**\*" />
+        <Compile Remove=".\**\bin\**\*" />
+        <Compile Remove=".\**\ignore\**\*" />
+        <Compile Remove=".\**\Properties\**\*" />
     </ItemGroup>
 
     <PropertyGroup>
