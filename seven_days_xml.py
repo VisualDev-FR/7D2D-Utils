@@ -3,8 +3,6 @@ import os
 import xml.dom.minidom as minidom
 from xml.etree.ElementTree import Element
 from pathlib import Path
-import json
-from pprint import pprint
 
 import click
 import lxml.etree as ET
