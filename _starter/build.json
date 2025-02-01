@@ -1,0 +1,11 @@
+{
+    "name": "@MODNAME",
+    "csproj": "@MODNAME.csproj",
+    "include": [
+        "Config",
+        "UIAtlases",
+        "Resources",
+        "Prefabs"
+    ],
+    "dependencies": []
+}
