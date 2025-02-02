@@ -26,7 +26,7 @@ cd path/to/7D2D-utils
 git clone https://github.com/VisualDev-FR/7D2D-Utils
 ```
 
-Adding the path to the [bin directory](./bin) of the cloned repository to your `PATH` environement variable
+Adding the path of the [bin directory](./bin) to your environement variable `PATH`
 
 * windows search bar/modify environement variables for your account
 * user variables for `your_username`/path/edit/new

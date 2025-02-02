@@ -32,7 +32,7 @@ def _get_path(name: str, *default: Union[str, Path]) -> Path:
             "Configure it from '{CONFIG_PATH.resolve()}' or from an environement variable"
         )
 
-    return path
+    return path.resolve()
 
 
 def _get_env(name: str) -> str:
@@ -42,12 +42,17 @@ def _get_env(name: str) -> str:
     env = os.environ.get(name)
 
     if env is None:
-        raise SystemExit(f"Missing env variable: '{name}', see '{_README_PATH}' for more details.")
+        raise SystemExit(
+            f"Missing env variable: '{name}', see '{_README_PATH}' for more details."
+        )
 
     return env
 
 
+# fmt: off
 PATH_7D2D = _get_path("PATH_7D2D", _get_env("PATH_7D2D"))
 PATH_7D2D_USER = _get_path("PATH_7D2D", _get_env("APPDATA"), "7DaysToDie")
-PATH_7D2D_SERVER = _get_path("PATH_7D2D_SERVER", _get_env("APPDATA"), "7DaysToDie")
 PATH_7D2D_EXE = _get_path("PATH_7D2D", PATH_7D2D, "7DaysToDie.exe")
+PATH_7D2D_SERVER = _get_path("PATH_7D2D_SERVER", PATH_7D2D, "../7 Days to Die Dedicated Server/7DaysToDieServer.exe")
+PATH_PREFABS = _get_path("PATH_PREFABS", PATH_7D2D_USER, "LocalPrefabs")
+# fmt: on
