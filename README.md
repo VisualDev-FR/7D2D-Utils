@@ -12,7 +12,8 @@ It provides usefull command for:
 
 * Windows 10+
 * [python 3.11+](https://www.python.org/downloads/)
-* [.NET Framework 4.8+](https://dotnet.microsoft.com/fr-fr/download)
+* [.NET Framework 4.8+](https://dotnet.microsoft.com/fr-fr/download) (for building dll mods only)
+* [git 2.32+](https://git-scm.com/downloads) (for auto updates only)
 
 
 ## Installation
