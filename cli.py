@@ -1,6 +1,7 @@
 import _click as click
 
 from commands.new import cmd_new
+from commands.update import cmd_update
 from commands.build import (
     cmd_build,
     cmd_release,
@@ -35,6 +36,9 @@ def cli():
 
 # new.py
 cli.add_command(cmd_new)
+
+# update.py
+cli.add_command(cmd_update)
 
 # build.py
 cli.add_command(cmd_build)
