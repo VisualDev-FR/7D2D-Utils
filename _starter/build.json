@@ -1,6 +1,6 @@
 {
     "name": "@MODNAME",
-    "csproj": "@MODNAME.csproj",
+    "csproj": "@MODNAME!kebab.csproj",
     "include": [
         "ModInfo.xml",
         "Config",

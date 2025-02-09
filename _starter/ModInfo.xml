@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xml>
-	<Name value="@MODNAME" />
+	<Name value="@MODNAME!pascal" />
 	<DisplayName value="@MODNAME" />
 	<Description value="" />
 	<Author value="" />

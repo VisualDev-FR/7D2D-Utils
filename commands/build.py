@@ -52,7 +52,7 @@ class ModBuilder:
 
         if csproj is not None:
             self.csproj = Path(self.root_dir, csproj).resolve()
-            self.build_cmd = f"dotnet build --no-incremental {self.csproj}"
+            self.build_cmd = f'dotnet build --no-incremental "{self.csproj}"'
 
     def _read_build_infos(self, dir: Path) -> dict:
         """

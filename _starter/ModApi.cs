@@ -2,7 +2,7 @@ using System.Reflection;
 
 namespace Harmony
 {
-    public class @MODNAME : IModApi
+    public class @MODNAME!pascal : IModApi
     {
         public void InitMod(Mod _modInstance)
         {
