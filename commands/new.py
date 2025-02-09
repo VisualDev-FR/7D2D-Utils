@@ -142,4 +142,9 @@ def cmd_new(mod_name: str):
     _render_template(Path(mod_name, "Harmony/ModApi.cs"), PLACEHOLDERS)
     _render_template(Path(mod_name, "build.json"), PLACEHOLDERS)
 
-    subprocess.run(f"git init {Path(mod_name)}", capture_output=True)
+    try:
+
+        subprocess.run(f"git init {Path(mod_name)}", capture_output=True)
+
+    except FileNotFoundError:
+        print("WRN: error while initializing git repository")
