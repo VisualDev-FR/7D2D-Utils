@@ -5,6 +5,7 @@ from commands.update import cmd_update
 from commands.build import (
     cmd_build,
     cmd_release,
+    cmd_install,
     cmd_shut_down,
     cmd_start_local,
     cmd_start_server,
@@ -47,6 +48,7 @@ cli.add_command(cmd_fetch_prefabs)
 cli.add_command(cmd_start_server)
 cli.add_command(cmd_start_local)
 cli.add_command(cmd_shut_down)
+cli.add_command(cmd_install)
 
 
 if __name__ == "__main__":

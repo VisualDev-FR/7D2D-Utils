@@ -179,7 +179,9 @@ class ModBuilder:
             shutil.rmtree(self.build_dir)
 
     def install(self):
-
+        """
+        TODOC
+        """
         if self.mod_path.exists():
             shutil.rmtree(self.mod_path)
 
@@ -280,7 +282,6 @@ def cmd_start_local():
     Compile the project, then start a local game
     """
     builder = ModBuilder()
-
     builder.build()
     builder.install()
     builder.shut_down()
@@ -317,3 +318,13 @@ def cmd_fetch_prefabs():
     Copy all prefabs specified in `build.json/prefabs` into the folder `Prefab` of the current working directory
     """
     ModBuilder().fetch_prefabs()
+
+
+@click.command("install")
+def cmd_install():
+    """
+    Build the project then install the mod in the 7 days Mods folder
+    """
+    builder = ModBuilder()
+    builder.build()
+    builder.install()
