@@ -14,8 +14,8 @@ import _click as click
 import config
 
 
-def _return_code(command: str) -> int:
-    return subprocess.run(command).returncode
+def _return_code(command: str, quiet: bool = False) -> int:
+    return subprocess.run(command, capture_output=quiet).returncode
 
 
 class ModBuilder:
@@ -126,12 +126,12 @@ class ModBuilder:
         if hard:
             shutil.rmtree(world_dir)
 
-    def _compile_csproj(self) -> bool:
+    def _compile_csproj(self, quiet: bool = False) -> bool:
 
         if self.build_cmd is None:
             return True
 
-        return _return_code(self.build_cmd) == 0
+        return _return_code(self.build_cmd, quiet) == 0
 
     def _build_dependencies(self) -> List[Path]:
 
@@ -144,16 +144,16 @@ class ModBuilder:
             if not build_infos.exists():
                 raise SystemExit(f"Can't find '{build_infos}'")
 
-            print(f"build '{dep.resolve()}'")
+            print(f"build dependency '{dep.resolve()}'")
 
             builder = ModBuilder(dep)
-            builder.build()
+            builder.build(quiet=True)
 
             zip_archives.append(builder.zip_archive)
 
         return zip_archives
 
-    def build(self, clean: bool = False):
+    def build(self, clean: bool = False, quiet: bool = False):
 
         if self.zip_archive.exists():
             os.remove(self.zip_archive)
@@ -163,7 +163,7 @@ class ModBuilder:
 
         os.makedirs(self.build_dir)
 
-        if not self._compile_csproj():
+        if not self._compile_csproj(quiet):
             raise SystemExit()
 
         self._add_includes()
@@ -251,27 +251,27 @@ class ModBuilder:
 
         dependencies = self._build_dependencies()
 
-        print(*dependencies, sep="\n")
+        for path in dependencies + [self.zip_archive]:
 
-        # for path in dependencies + [self.build_zip]:
+            dst = Path(self.build_dir, path.stem)
 
-        #     dst = Path(self.build_dir, path.stem)
+            with ZipFile(path, "r") as zip_file:
+                zip_file.extractall(dst)
 
-        #     with ZipFile(path, "r") as zip_file:
-        #         zip_file.extractall(dst)
-
-        # shutil.make_archive(f"{self.mod_name}-release", "zip", self.build_dir)
+        shutil.make_archive(f"{self.mod_name}-release", "zip", self.build_dir)
 
         return self.zip_archive
 
 
+# fmt: off
 @click.command("build")
-@click.option("--clean", is_flag=True, help="Clean the build directory, once done.")
-def cmd_build(clean: bool):
+@click.option("-c", "--clean", is_flag=True, help="Clean the build directory, once done.")
+@click.option("-q", "--quiet", is_flag=True, help="Hide dotnet outputs.")
+def cmd_build(clean: bool, quiet: bool):
     """
     Compile the project in the current working directory and create a zip archive ready for testing
     """
-    ModBuilder().build(clean)
+    ModBuilder().build(clean, quiet)
 
 
 @click.command("start-local")
