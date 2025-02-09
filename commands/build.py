@@ -178,15 +178,28 @@ class ModBuilder:
         if clean:
             shutil.rmtree(self.build_dir)
 
-    def install(self):
+    def _install(self, path: Path):
         """
         TODOC
         """
-        if self.mod_path.exists():
-            shutil.rmtree(self.mod_path)
+        if path.exists():
+            shutil.rmtree(path)
 
         with ZipFile(self.zip_archive, "r") as zip_file:
-            zip_file.extractall(self.mod_path)
+            zip_file.extractall(path)
+
+    def install_local(self):
+        """
+        TODOC
+        """
+        self._install(self.mod_path)
+
+    def install_server(self):
+        """
+        TODOC
+        """
+        path = Path(config.PATH_7D2D_SERVER, "../Mods", self.mod_name)
+        self._install(path)
 
     def start_local(self):
 
@@ -200,13 +213,21 @@ class ModBuilder:
         self._clear_world("Old Wosayuwe Valley")  # default 4096
 
     def start_server(self):
-        raise SystemExit("Not Implemented yet")
+        """
+        TODOC
+        """
+        subprocess.Popen(
+            cwd=config.PATH_7D2D_SERVER.parent,
+            executable=Path(config.PATH_7D2D_SERVER.parent, "startdedicated.bat"),
+            args=[],
+        )
 
     def shut_down(self):
-        # fmt: off
-        subprocess.run("taskkill /IM 7DaysToDie.exe /F", capture_output=True)
-        subprocess.run("taskkill /IM 7DaysToDieServer.exe /F", capture_output=True)
-        # fmt: on
+        """
+        TODOC
+        """
+        subprocess.run("taskkill /F /IM 7DaysToDie.exe", capture_output=True)
+        subprocess.run("taskkill /F /IM 7DaysToDieServer.exe", capture_output=True)
 
     def fetch_prefabs(self, root: Path = None):
 
@@ -284,7 +305,7 @@ def cmd_start_local():
     builder = ModBuilder()
     builder.shut_down()
     builder.build()
-    builder.install()
+    builder.install_local()
     builder.start_local()
 
 
@@ -293,7 +314,12 @@ def cmd_start_server():
     """
     Compile the project, then start a local game + a dedicated server instance with mod installed
     """
-    ModBuilder().start_server()
+    builder = ModBuilder()
+    builder.shut_down()
+    builder.build()
+    builder.install_local()
+    builder.start_local()
+    builder.start_server()
 
 
 @click.command("shut-down")
@@ -328,4 +354,4 @@ def cmd_install():
     builder = ModBuilder()
     builder.shut_down()
     builder.build()
-    builder.install()
+    builder.install_local()
