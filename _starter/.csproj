@@ -67,11 +67,8 @@
 
     <!-- scripts -->
     <ItemGroup>
-        <Compile Include=".\**\*.cs" />
-        <Compile Remove=".\**\obj\**\*" />
-        <Compile Remove=".\**\bin\**\*" />
-        <Compile Remove=".\**\ignore\**\*" />
-        <Compile Remove=".\**\Properties\**\*" />
+        <Compile Include=".\Scripts\**\*.cs" />
+        <Compile Include=".\Harmony\**\*.cs" />
     </ItemGroup>
 
     <PropertyGroup>
