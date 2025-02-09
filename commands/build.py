@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from zipfile import ZipFile
 from pathlib import Path
+from typing import List
 import subprocess
 import shutil
 import json
@@ -17,7 +18,7 @@ def _return_code(command: str) -> int:
     return subprocess.run(command).returncode
 
 
-class BuildCommand:
+class ModBuilder:
 
     def __init__(self, dir: Path = None):
         """
@@ -37,11 +38,12 @@ class BuildCommand:
         self.build_infos = build_infos
         self.mod_name = build_infos["name"]
         self.mod_path = build_infos.get("mod_path") or Path(config.PATH_7D2D, "Mods", self.mod_name)
+        self.prefabs = build_infos.get("prefabs")
 
         self.include = [path for path in include]
-        self.dependencies = [Path(dir, path) for path in dependencies]
+        self.dependencies = [Path(dir, path).resolve() for path in dependencies]
 
-        self.build_zip = Path(dir, f"{self.mod_name}.zip")
+        self.zip_archive = Path(dir, f"{self.mod_name}.zip")
         self.build_dir = Path(dir, "build")
         # fmt: on
 
@@ -49,8 +51,8 @@ class BuildCommand:
         self.build_cmd = None
 
         if csproj is not None:
-            self.csproj = Path(self.root_dir, csproj)
-            self.build_cmd = f"dotnet build --no-incremental {csproj}"
+            self.csproj = Path(self.root_dir, csproj).resolve()
+            self.build_cmd = f"dotnet build --no-incremental {self.csproj}"
 
     def _read_build_infos(self, dir: Path) -> dict:
         """
@@ -68,7 +70,7 @@ class BuildCommand:
 
     def _include_file(self, path: Path, move: bool = False):
 
-        dst = Path(self.build_dir, path)
+        dst = Path(self.build_dir, path.relative_to(self.root_dir))
 
         if not dst.parent.exists():
             os.makedirs(dst.parent)
@@ -79,15 +81,16 @@ class BuildCommand:
             shutil.copy(path, dst)
 
     def _include_dir(self, dir_path: Path):
-        shutil.copytree(dir_path, Path(self.build_dir, dir_path))
+
+        dst = Path(self.build_dir, dir_path.name)
+
+        shutil.copytree(dir_path, dst)
 
     def _include_glob(self, include: str, move: bool = False):
         """
         TODOC
         """
         for element in glob.glob(include, recursive=True, root_dir=self.root_dir):
-
-            print(f"includes '{element}'")
 
             path = Path(self.root_dir, element)
 
@@ -130,35 +133,57 @@ class BuildCommand:
 
         return _return_code(self.build_cmd) == 0
 
-    def build(self):
+    def _build_dependencies(self) -> List[Path]:
 
-        if not self._compile_csproj():
-            raise SystemExit()
+        zip_archives = []
 
-        if self.build_zip.exists():
-            os.remove(self.build_zip)
+        for dep in self.dependencies:
+
+            build_infos = Path(dep, "build.json")
+
+            if not build_infos.exists():
+                raise SystemExit(f"Can't find '{build_infos}'")
+
+            print(f"build '{dep.resolve()}'")
+
+            builder = ModBuilder(dep)
+            builder.build()
+
+            zip_archives.append(builder.zip_archive)
+
+        return zip_archives
+
+    def build(self, clean: bool = False):
+
+        if self.zip_archive.exists():
+            os.remove(self.zip_archive)
 
         if self.build_dir.exists():
             shutil.rmtree(self.build_dir)
 
         os.makedirs(self.build_dir)
 
+        if not self._compile_csproj():
+            raise SystemExit()
+
         self._add_includes()
+        self.fetch_prefabs(self.build_dir)
 
         shutil.make_archive(
-            base_name=self.mod_name,
+            base_name=Path(self.root_dir, self.mod_name),
             format="zip",
             root_dir=self.build_dir,
         )
 
-        shutil.rmtree(self.build_dir)
+        if clean:
+            shutil.rmtree(self.build_dir)
 
     def install(self):
 
         if self.mod_path.exists():
             shutil.rmtree(self.mod_path)
 
-        with ZipFile(self.build_zip, "r") as zip_file:
+        with ZipFile(self.zip_archive, "r") as zip_file:
             zip_file.extractall(self.mod_path)
 
     def start_local(self):
@@ -181,7 +206,28 @@ class BuildCommand:
         subprocess.run("taskkill /IM 7DaysToDieServer.exe /F", capture_output=True)
         # fmt: on
 
-    def release(self):
+    def fetch_prefabs(self, root: Path = None):
+
+        if not self.prefabs:
+            return
+
+        if root is None:
+            root = self.root_dir
+
+        dst_prefabs = Path(root, "Prefabs")
+
+        for element in self.prefabs:
+            for path in glob.glob(f"{element}*", root_dir=config.PATH_PREFABS):
+
+                src = Path(config.PATH_PREFABS, path).absolute()
+                dst = Path(dst_prefabs, src.name)
+
+                if not dst.parent.exists():
+                    os.makedirs(dst.parent)
+
+                shutil.copyfile(src, dst)
+
+    def release(self) -> Path:
         """
         TODOC
         """
@@ -190,37 +236,38 @@ class BuildCommand:
         shutil.rmtree(self.build_dir, ignore_errors=True)
         os.makedirs(self.build_dir)
 
-        for path in self.dependencies + [self.build_zip]:
-            if not path.exists():
-                print(f"Dependency not found: '{path}'")
-                continue
+        dependencies = self._build_dependencies()
 
-            if not path.is_file():
-                print(f"Dependency is not a file: '{path}'")
-                continue
+        print(*dependencies, sep="\n")
 
-            dst = Path(self.build_dir, path.stem)
+        # for path in dependencies + [self.build_zip]:
 
-            with ZipFile(path, "r") as zip_file:
-                zip_file.extractall(dst)
+        #     dst = Path(self.build_dir, path.stem)
 
-        shutil.make_archive(f"{self.mod_name}-release", "zip", self.build_dir)
+        #     with ZipFile(path, "r") as zip_file:
+        #         zip_file.extractall(dst)
+
+        # shutil.make_archive(f"{self.mod_name}-release", "zip", self.build_dir)
+
+        return self.zip_archive
 
 
 @click.command("build")
-def cmd_compile():
+@click.argument("root-dir", type=click.Path())
+@click.option("--clean", is_flag=True, help="Clean the build directory, once done.")
+def cmd_build(clean: bool, root_dir: str = None):
     """
-    Compile the project in the curren working directory and create a zip archive ready for testing
+    Compile the project in the current working directory and create a zip archive ready for testing
     """
-    BuildCommand().build()
+    ModBuilder(root_dir).build(clean)
 
 
 @click.command("start-local")
 def cmd_start_local():
     """
-    TODOC
+    Compile the project, then start a local game
     """
-    builder = BuildCommand()
+    builder = ModBuilder()
 
     builder.build()
     builder.install()
@@ -231,22 +278,30 @@ def cmd_start_local():
 @click.command("start-server")
 def cmd_start_server():
     """
-    TODOC
+    Compile the project, then start a local game + a dedicated server instance with mod installed
     """
-    BuildCommand().start_server()
+    ModBuilder().start_server()
 
 
-@click.command("shut_down")
+@click.command("shut-down")
 def cmd_shut_down():
     """
-    TODOC
+    Hard closes all instances of 7DaysToDie.exe and 7DaysToDieServer.exe
     """
-    BuildCommand().shut_down()
+    ModBuilder().shut_down()
 
 
 @click.command("release")
 def cmd_release():
     """
-    TODOC
+    Compile the project and create the release zip archive
     """
-    BuildCommand().release()
+    ModBuilder().release()
+
+
+@click.command("fetch-prefabs")
+def cmd_fetch_prefabs():
+    """
+    Copy all prefabs specified in `build.json/prefabs` into the folder `Prefab` of the current working directory
+    """
+    ModBuilder().fetch_prefabs()

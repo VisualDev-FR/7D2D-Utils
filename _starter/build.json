@@ -2,10 +2,12 @@
     "name": "@MODNAME",
     "csproj": "@MODNAME.csproj",
     "include": [
+        "ModInfo.xml",
         "Config",
         "UIAtlases",
         "Resources",
         "Prefabs"
     ],
+    "prefabs": [],
     "dependencies": []
 }
