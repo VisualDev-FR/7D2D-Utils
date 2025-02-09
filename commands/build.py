@@ -282,9 +282,9 @@ def cmd_start_local():
     Compile the project, then start a local game
     """
     builder = ModBuilder()
+    builder.shut_down()
     builder.build()
     builder.install()
-    builder.shut_down()
     builder.start_local()
 
 
@@ -326,5 +326,6 @@ def cmd_install():
     Build the project then install the mod in the 7 days Mods folder
     """
     builder = ModBuilder()
+    builder.shut_down()
     builder.build()
     builder.install()
