@@ -20,31 +20,31 @@ def _return_code(command: str) -> int:
 
 class ModBuilder:
 
-    def __init__(self, dir: Path = None):
+    def __init__(self, root: Path = None):
         """
         TODOC
         """
-        if dir is None:
-            dir = Path(".")
+        if root is None:
+            root = Path(".")
 
-        build_infos = self._read_build_infos(dir)
+        build_infos = self._read_build_infos(root)
 
         dependencies = build_infos.get("dependencies", list())
         include = build_infos.get("include", list())
         csproj = build_infos.get("csproj")
 
         # fmt: off
-        self.root_dir = dir
+        self.root_dir = root
         self.build_infos = build_infos
         self.mod_name = build_infos["name"]
         self.mod_path = build_infos.get("mod_path") or Path(config.PATH_7D2D, "Mods", self.mod_name)
         self.prefabs = build_infos.get("prefabs")
 
         self.include = [path for path in include]
-        self.dependencies = [Path(dir, path).resolve() for path in dependencies]
+        self.dependencies = [Path(root, path).resolve() for path in dependencies]
 
-        self.zip_archive = Path(dir, f"{self.mod_name}.zip")
-        self.build_dir = Path(dir, "build")
+        self.zip_archive = Path(root, f"{self.mod_name}.zip")
+        self.build_dir = Path(root, "build")
         # fmt: on
 
         self.csproj = None
@@ -214,18 +214,31 @@ class ModBuilder:
         if root is None:
             root = self.root_dir
 
-        dst_prefabs = Path(root, "Prefabs")
+        dst_prefabs = Path(root, "Prefabs").resolve()
+
+        if dst_prefabs.exists():
+            shutil.rmtree(dst_prefabs)
 
         for element in self.prefabs:
-            for path in glob.glob(f"{element}*", root_dir=config.PATH_PREFABS):
 
-                src = Path(config.PATH_PREFABS, path).absolute()
+            prefabs = glob.glob(f"{element}*", root_dir=config.PATH_PREFABS)
+
+            if not prefabs:
+                print(f"WRN: no prefab found for '{element}'")
+
+            for path in prefabs:
+
+                src = Path(config.PATH_PREFABS, path)
                 dst = Path(dst_prefabs, src.name)
 
                 if not dst.parent.exists():
                     os.makedirs(dst.parent)
 
-                shutil.copyfile(src, dst)
+                if src.is_file():
+                    shutil.copyfile(src, dst)
+
+                else:
+                    shutil.copytree(src, dst, dirs_exist_ok=True)
 
     def release(self) -> Path:
         """
@@ -253,13 +266,12 @@ class ModBuilder:
 
 
 @click.command("build")
-@click.argument("root-dir", type=click.Path())
 @click.option("--clean", is_flag=True, help="Clean the build directory, once done.")
-def cmd_build(clean: bool, root_dir: str = None):
+def cmd_build(clean: bool):
     """
     Compile the project in the current working directory and create a zip archive ready for testing
     """
-    ModBuilder(root_dir).build(clean)
+    ModBuilder().build(clean)
 
 
 @click.command("start-local")
