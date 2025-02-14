@@ -11,6 +11,7 @@ import os
 
 import _click as click
 
+from . import utils
 import config
 
 
@@ -153,6 +154,13 @@ class ModBuilder:
 
         return zip_archives
 
+    def _write_version_file(self):
+        """
+        TODOC
+        """
+        with open(Path(self.build_dir, "version.txt"), "w") as writer:
+            writer.write(utils.get_current_commit(self.root_dir))
+
     def build(self, clean: bool = False, quiet: bool = False):
 
         if self.zip_archive.exists():
@@ -167,6 +175,7 @@ class ModBuilder:
             raise SystemExit()
 
         self._add_includes()
+        self._write_version_file()
         self.fetch_prefabs(self.build_dir)
 
         shutil.make_archive(
@@ -281,7 +290,9 @@ class ModBuilder:
             with ZipFile(path, "r") as zip_file:
                 zip_file.extractall(dst)
 
-        shutil.make_archive(f"{self.mod_name}-release", "zip", self.build_dir)
+        commit_hash = utils.get_current_commit(self.root_dir)[:8]
+
+        shutil.make_archive(f"{self.mod_name}-release-{commit_hash}", "zip", self.build_dir)
 
         return self.zip_archive
 
