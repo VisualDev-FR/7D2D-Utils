@@ -2,6 +2,7 @@ import _click as click
 
 from commands.new import cmd_new
 from commands.update import cmd_update
+from commands.bbcode import cmd_bbcode_to_html
 from commands.build import (
     cmd_build,
     cmd_release,
@@ -49,6 +50,9 @@ cli.add_command(cmd_start_server)
 cli.add_command(cmd_start_local)
 cli.add_command(cmd_shut_down)
 cli.add_command(cmd_install)
+
+# bbcode.py
+cli.add_command(cmd_bbcode_to_html)
 
 
 if __name__ == "__main__":

@@ -206,7 +206,7 @@ class ModBuilder:
         subprocess.Popen(
             cwd=config.PATH_7D2D,
             executable=config.PATH_7D2D_EXE,
-            args=["--noeac"],
+            args=["--noeac", "-batchmode"],
         )
 
         self._clear_world("Old Honihebu County")  # default 2048
