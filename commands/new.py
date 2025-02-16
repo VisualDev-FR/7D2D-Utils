@@ -123,7 +123,6 @@ def cmd_new(mod_name: str):
     os.makedirs(mod_name)
     os.makedirs(Path(mod_name, "Config"))
     os.makedirs(Path(mod_name, "Resources"))
-    os.makedirs(Path(mod_name, "Scripts"))
     os.makedirs(Path(mod_name, "Harmony"))
     os.makedirs(Path(mod_name, "Prefabs"))
     os.makedirs(Path(mod_name, "UIAtlases/ItemIconAtlas"))
@@ -131,10 +130,13 @@ def cmd_new(mod_name: str):
     csproj = f"{_format_kebab(mod_name)}.csproj"
 
     shutil.copy(Path(starter_dir, "ModInfo.xml"), Path(mod_name, "ModInfo.xml"))
+    shutil.copy(Path(starter_dir, "ModConfig.xml"), Path(mod_name, "ModConfig.xml"))
     shutil.copy(Path(starter_dir, ".csproj"), Path(mod_name, csproj))
     shutil.copy(Path(starter_dir, "gitignore.template"), Path(mod_name, ".gitignore"))
     shutil.copy(Path(starter_dir, "ModApi.cs"), Path(mod_name, "Harmony/ModApi.cs"))
     shutil.copy(Path(starter_dir, "build.json"), Path(mod_name, "build.json"))
+
+    shutil.copytree(Path(starter_dir, "Scripts"), Path(mod_name, "Scripts"))
     # fmt: on
 
     _render_template(Path(mod_name, csproj), PLACEHOLDERS)

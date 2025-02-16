@@ -58,6 +58,16 @@
             <Private>False</Private>
         </Reference>
 
+        <Reference Include="System.Xml">
+            <HintPath>$(PATH_7D2D)\7DaysToDie_Data\Managed\System.Xml.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+
+        <Reference Include="System.Xml.Linq">
+            <HintPath>$(PATH_7D2D)\7DaysToDie_Data\Managed\System.Xml.Linq.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+
         <Reference Include="UnityEngine.CoreModule">
             <HintPath>$(PATH_7D2D)\7DaysToDie_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
             <Private>False</Private>
