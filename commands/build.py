@@ -19,6 +19,14 @@ def _return_code(command: str, quiet: bool = False) -> int:
     return subprocess.run(command, capture_output=quiet).returncode
 
 
+class SaveCleaningData:
+
+    def __init__(self, world: str, save: str, hard: bool = False):
+        self.world  = world
+        self.save = save
+        self.hard = hard
+
+
 class ModBuilder:
 
     def __init__(self, root: Path = None):
@@ -46,6 +54,8 @@ class ModBuilder:
 
         self.zip_archive = Path(root, f"{self.mod_name}.zip")
         self.build_dir = Path(root, "build")
+        self.save_cleaning_datas = [SaveCleaningData(**data) for data in self.build_infos.get("clear_saves", list())]
+        self.commit_hash = utils.get_commit_hash(self.root_dir)
         # fmt: on
 
         self.csproj = None
@@ -110,22 +120,28 @@ class ModBuilder:
         for include in self.include:
             self._include_glob(include)
 
-    def _clear_world(
-        self,
-        world_name: str,
-        save_name: str = "Caves",
-        hard: bool = False,
-    ):
+    def _clear_save(self, cleaning_datas: SaveCleaningData):
+        """
+        TODOC
+        """
+        world_name = cleaning_datas.world
+        save_name = cleaning_datas.save
 
-        world_dir = Path(config.PATH_7D2D_USER, f"GeneratedWorlds/{world_name}")
         save_dir = Path(config.PATH_7D2D_USER, f"Saves/{world_name}/{save_name}")
 
         shutil.rmtree(Path(save_dir, "Region"), ignore_errors=True)
         shutil.rmtree(Path(save_dir, "DynamicMeshes"), ignore_errors=True)
         shutil.rmtree(Path(save_dir, "decoration.7dt"), ignore_errors=True)
 
-        if hard:
-            shutil.rmtree(world_dir)
+        if cleaning_datas.hard:
+            shutil.rmtree(save_dir)
+
+    def _clear_saves(self):
+        """
+        TODOC
+        """
+        for world_clear_data in self.save_cleaning_datas:
+            self._clear_save(world_clear_data)
 
     def _compile_csproj(self, quiet: bool = False) -> bool:
 
@@ -134,7 +150,7 @@ class ModBuilder:
 
         return _return_code(self.build_cmd, quiet) == 0
 
-    def _build_dependencies(self) -> List[Path]:
+    def _build_dependencies(self) -> List[ModBuilder]:
 
         zip_archives = []
 
@@ -150,7 +166,7 @@ class ModBuilder:
             builder = ModBuilder(dep)
             builder.build(quiet=True)
 
-            zip_archives.append(builder.zip_archive)
+            zip_archives.append(builder)
 
         return zip_archives
 
@@ -159,7 +175,7 @@ class ModBuilder:
         TODOC
         """
         with open(Path(self.build_dir, "version.txt"), "w") as writer:
-            writer.write(utils.get_current_commit(self.root_dir))
+            writer.write(self.commit_hash)
 
     def build(self, clean: bool = False, quiet: bool = False):
 
@@ -218,8 +234,7 @@ class ModBuilder:
             args=["--noeac"],
         )
 
-        self._clear_world("Old Honihebu County")  # default 2048
-        self._clear_world("Old Wosayuwe Valley")  # default 4096
+        self._clear_saves()
 
     def start_server(self):
         """
@@ -283,16 +298,21 @@ class ModBuilder:
 
         dependencies = self._build_dependencies()
 
-        for path in dependencies + [self.zip_archive]:
+        for builder in dependencies + [self]:
 
-            dst = Path(self.build_dir, path.stem)
+            dst = Path(self.build_dir, builder.zip_archive.stem)
 
-            with ZipFile(path, "r") as zip_file:
+            with ZipFile(builder.zip_archive, "r") as zip_file:
                 zip_file.extractall(dst)
 
-        commit_hash = utils.get_current_commit(self.root_dir)[:8]
+        with open(Path(self.build_dir, self.mod_name, "version.txt"), "w") as writer:
 
-        shutil.make_archive(f"{self.mod_name}-release-{commit_hash}", "zip", self.build_dir)
+            writer.write(f"version={self.commit_hash}\n")
+
+            for dep in dependencies:
+                writer.write(f"{dep.mod_name}={dep.commit_hash}\n")
+
+        shutil.make_archive(f"{self.mod_name}-release-{self.commit_hash[:8]}", "zip", self.build_dir)
 
         return self.zip_archive
 

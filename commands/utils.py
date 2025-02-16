@@ -3,7 +3,7 @@ from typing import Optional
 import subprocess
 
 
-def get_current_commit(repo_path: Path) -> str:
+def get_commit_hash(repo_path: Path) -> str:
     """
     Retrieves the latest commit SHA from the local Git repository.
     """
