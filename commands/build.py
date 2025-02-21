@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List
 import subprocess
 import shutil
+import time
 import hashlib
 import json
 import glob
@@ -162,14 +163,27 @@ class ModBuilder:
             if not build_infos.exists():
                 raise SystemExit(f"Can't find '{build_infos}'")
 
-            print(f"build dependency '{dep.resolve()}'")
-
             builder = ModBuilder(dep)
+
+            print(f"build {builder.commit_hash[:8]} '{builder.mod_name}' {self._pending_modifications_count(builder.root_dir)}")
+
             builder.build(quiet=True)
 
             zip_archives.append(builder)
 
         return zip_archives
+
+    def _pending_modifications_count(self, repo_path: Path) -> int:
+        """
+        TODOC
+        """
+        result = subprocess.check_output(
+            "git diff --name-status --staged && git diff --name-status",
+            cwd=repo_path,
+            shell=True,
+        )
+
+        return len(result.decode().split("\n")) - 1
 
     def _write_version_file(self):
         """
@@ -302,6 +316,7 @@ class ModBuilder:
         """
         TODOC
         """
+        start = time.time()
         self.build()
 
         shutil.rmtree(self.build_dir, ignore_errors=True)
@@ -327,6 +342,8 @@ class ModBuilder:
                 writer.write(f"{dep.mod_name}={dep.commit_hash.__str__()}\n")
 
         shutil.make_archive(f"{self.mod_name}-release-{combined_hash[:8]}", "zip", self.build_dir)
+
+        print(f"build {combined_hash[:8]} done in {time.time() - start:.1f}s")
 
         return self.zip_archive
 
