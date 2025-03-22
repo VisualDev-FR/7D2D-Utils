@@ -3,18 +3,23 @@ from typing import Optional
 import subprocess
 
 
-def get_commit_hash(repo_path: Path) -> str:
+def get_commit_hash(repo_path: Path) -> Optional[str]:
     """
     Retrieves the latest commit SHA from the local Git repository.
     """
     if repo_path is None:
         raise ValueError("Null repo_path")
 
-    result = subprocess.run(
-        ["git", "-C", repo_path, "rev-parse", "HEAD"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
+    try:
 
-    return result.stdout.strip()
+        result = subprocess.run(
+            ["git", "-C", repo_path, "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+
+        return result.stdout.strip()
+
+    except Exception as e:
+        return None

@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import List
 import subprocess
 import shutil
+import hashlib
 import json
 import glob
 import os
@@ -175,7 +176,17 @@ class ModBuilder:
         TODOC
         """
         with open(Path(self.build_dir, "version.txt"), "w") as writer:
-            writer.write(self.commit_hash)
+            writer.write(self.commit_hash.__str__())
+
+    def _combine_commit_hashes(self, dependencies: List[ModBuilder]) -> str:
+        """
+        TODOC
+        """
+        hashes = [dep.commit_hash.__str__() for dep in dependencies]
+        hashes.append(self.commit_hash.__str__())
+        hashes.sort()
+
+        return hashlib.sha256("".join(hashes).encode()).hexdigest()
 
     def build(self, clean: bool = False, quiet: bool = False):
 
@@ -188,7 +199,7 @@ class ModBuilder:
         os.makedirs(self.build_dir)
 
         if not self._compile_csproj(quiet):
-            raise SystemExit()
+            raise SystemExit(f"build failed: {self.mod_name}")
 
         self._add_includes()
         self._write_version_file()
@@ -307,12 +318,15 @@ class ModBuilder:
 
         with open(Path(self.build_dir, self.mod_name, "version.txt"), "w") as writer:
 
-            writer.write(f"version={self.commit_hash}\n")
+            combined_hash = self._combine_commit_hashes(dependencies)
+
+            writer.write(f"version={combined_hash}\n")
+            writer.write(f"{self.mod_name}={self.commit_hash.__str__()}\n")
 
             for dep in dependencies:
-                writer.write(f"{dep.mod_name}={dep.commit_hash}\n")
+                writer.write(f"{dep.mod_name}={dep.commit_hash.__str__()}\n")
 
-        shutil.make_archive(f"{self.mod_name}-release-{self.commit_hash[:8]}", "zip", self.build_dir)
+        shutil.make_archive(f"{self.mod_name}-release-{combined_hash[:8]}", "zip", self.build_dir)
 
         return self.zip_archive
 
