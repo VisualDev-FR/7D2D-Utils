@@ -359,8 +359,9 @@ def cmd_build(clean: bool, quiet: bool):
     ModBuilder().build(clean, quiet)
 
 
-@click.command("start-local")
-def cmd_start_local():
+@click.command("start")
+@click.option("-s", "--server", is_flag=True)
+def cmd_start_local(server: bool):
     """
     Compile the project, then start a local game
     """
@@ -370,18 +371,8 @@ def cmd_start_local():
     builder.install_local()
     builder.start_local()
 
-
-@click.command("start-server")
-def cmd_start_server():
-    """
-    Compile the project, then start a local game + a dedicated server instance with mod installed
-    """
-    builder = ModBuilder()
-    builder.shut_down()
-    builder.build()
-    builder.install_local()
-    builder.start_local()
-    builder.start_server()
+    if server:
+        builder.start_server()
 
 
 @click.command("shut-down")

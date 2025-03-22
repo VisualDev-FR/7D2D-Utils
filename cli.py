@@ -8,7 +8,6 @@ from commands.build import (
     cmd_install,
     cmd_shut_down,
     cmd_start_local,
-    cmd_start_server,
     cmd_fetch_prefabs,
 )
 
@@ -45,7 +44,6 @@ cli.add_command(cmd_update)
 cli.add_command(cmd_build)
 cli.add_command(cmd_release)
 cli.add_command(cmd_fetch_prefabs)
-cli.add_command(cmd_start_server)
 cli.add_command(cmd_start_local)
 cli.add_command(cmd_shut_down)
 cli.add_command(cmd_install)
