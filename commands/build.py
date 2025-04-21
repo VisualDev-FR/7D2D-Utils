@@ -268,6 +268,8 @@ class ModBuilder:
         subprocess.Popen(
             cwd=config.PATH_7D2D_SERVER.parent,
             executable=Path(config.PATH_7D2D_SERVER.parent, "startdedicated.bat"),
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
             args=[],
         )
 
@@ -372,6 +374,7 @@ def cmd_start_local(server: bool):
     builder.start_local()
 
     if server:
+        builder.install_server()
         builder.start_server()
 
 
