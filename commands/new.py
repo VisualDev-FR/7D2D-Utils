@@ -124,9 +124,10 @@ def cmd_new(mod_name: str):
 
     os.makedirs(mod_name)
     os.makedirs(Path(mod_name, "Config"))
-    os.makedirs(Path(mod_name, "Resources"))
     os.makedirs(Path(mod_name, "Harmony"))
+    os.makedirs(Path(mod_name, "Ignore"))
     os.makedirs(Path(mod_name, "Prefabs"))
+    os.makedirs(Path(mod_name, "Resources"))
     os.makedirs(Path(mod_name, "Scripts"))
     os.makedirs(Path(mod_name, "UIAtlases/ItemIconAtlas"))
 
@@ -144,7 +145,6 @@ def cmd_new(mod_name: str):
     _render_template(Path(mod_name, "build.json"), PLACEHOLDERS)
 
     try:
-
         subprocess.run(f"git init {Path(mod_name)}", capture_output=True)
 
     except FileNotFoundError:

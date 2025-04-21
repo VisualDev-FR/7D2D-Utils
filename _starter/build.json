@@ -3,6 +3,7 @@
     "csproj": "@MODNAME!kebab.csproj",
     "include": [
         "ModInfo.xml",
+        "ModConfig.xml",
         "Config",
         "UIAtlases",
         "Resources",
