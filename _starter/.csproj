@@ -73,7 +73,7 @@
             <Private>False</Private>
         </Reference>
 
-        <Reference Include="UnityEngine.CoreModule">
+        <Reference Include="ModUtils">
             <HintPath>$(PATH_7D2D)\Mods\7D2D-mod-utils\mod-utils.dll</HintPath>
             <Private>False</Private>
         </Reference>
