@@ -45,17 +45,18 @@ class ModBuilder:
         csproj = build_infos.get("csproj")
 
         # fmt: off
-        self.root_dir = root
+        self.root_dir = root.resolve()
         self.build_infos = build_infos
         self.mod_name = build_infos["name"]
-        self.mod_path = build_infos.get("mod_path") or Path(config.PATH_7D2D, "Mods", self.mod_name)
+        self.game_path = Path(build_infos.get("game_path") or config.PATH_7D2D)
+        self.mod_path = Path(self.game_path, "Mods", self.mod_name)
         self.prefabs = build_infos.get("prefabs")
 
         self.include = [path for path in include]
         self.dependencies = [Path(root, path).resolve() for path in dependencies]
 
-        self.zip_archive = Path(root, f"{self.mod_name}.zip")
-        self.build_dir = Path(root, "build")
+        self.zip_archive = Path(root, f"{self.mod_name}.zip").resolve()
+        self.build_dir = Path(root, "build").resolve()
         self.save_cleaning_datas = [SaveCleaningData(**data) for data in self.build_infos.get("clear_saves", list())]
         self.commit_hash = utils.get_commit_hash(self.root_dir)
         # fmt: on
@@ -254,8 +255,8 @@ class ModBuilder:
     def start_local(self):
 
         subprocess.Popen(
-            cwd=config.PATH_7D2D,
-            executable=config.PATH_7D2D_EXE,
+            cwd=self.game_path,
+            executable=Path(self.game_path, "7DaysToDie.exe"),
             args=["--noeac"],
         )
 

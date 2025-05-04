@@ -11,5 +11,7 @@
     ],
     "prefabs": [],
     "dependencies": [],
-    "clear_saves": []
+    "clear_saves": [],
+    "game_path": null,
+    "dedi_path": null
 }

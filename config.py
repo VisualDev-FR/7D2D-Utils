@@ -51,6 +51,5 @@ def _get_env(name: str) -> str:
 
 PATH_7D2D = _get_path("PATH_7D2D", _get_env("PATH_7D2D"))
 PATH_7D2D_USER = _get_path("PATH_7D2D", _get_env("APPDATA"), "7DaysToDie")
-PATH_7D2D_EXE = _get_path("PATH_7D2D", PATH_7D2D, "7DaysToDie.exe")
 PATH_7D2D_SERVER = _get_path("PATH_7D2D_SERVER", PATH_7D2D, "../7 Days to Die Dedicated Server/7DaysToDieServer.exe")
 PATH_PREFABS = _get_path("PATH_PREFABS", PATH_7D2D_USER, "LocalPrefabs")
