@@ -350,6 +350,22 @@ class ModBuilder:
 
         return self.zip_archive
 
+    def show_infos(self) -> None:
+        """
+        TODOC
+        """
+        print(f"mod_name ..... : {self.mod_name}")
+        print(f"commit_hash .. : {self.commit_hash}")
+        print()
+        print(f"root_dir ..... : {self.root_dir}")
+        print(f"build_dir .... : {self.build_dir}")
+        print(f"csproj ....... : {self.csproj}")
+        print(f"zip_archive .. : {self.zip_archive}")
+        print()
+        print(f"game_path .... : {self.game_path}")
+        print(f"mod_path ..... : {self.mod_path}")
+        print()
+
 
 # fmt: off
 @click.command("build")
@@ -412,3 +428,11 @@ def cmd_install():
     builder.shut_down()
     builder.build()
     builder.install_local()
+
+
+@click.command("infos")
+def cmd_infos():
+    """
+    Show dumped infos of the current build.json file
+    """
+    ModBuilder().show_infos()
