@@ -249,6 +249,9 @@ class ModBuilder:
         """
         TODOC
         """
+        if config.PATH_7D2D_SERVER is None:
+            raise ValueError("PATH_7D2D_SERVER is not defined.")
+
         path = Path(config.PATH_7D2D_SERVER, "../Mods", self.mod_name)
         self._install(path)
 
@@ -266,9 +269,14 @@ class ModBuilder:
         """
         TODOC
         """
+        if config.PATH_7D2D_SERVER is None:
+            raise ValueError("PATH_7D2D_SERVER is not defined.")
+
+        server_directory = config.PATH_7D2D_SERVER.parent
+
         subprocess.Popen(
-            cwd=config.PATH_7D2D_SERVER.parent,
-            executable=Path(config.PATH_7D2D_SERVER.parent, "startdedicated.bat"),
+            cwd=server_directory,
+            executable=Path(server_directory, "startdedicated.bat"),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             args=[],

@@ -1,6 +1,6 @@
 # fmt: off
 
-from typing import Union
+from typing import Union, Optional
 from pathlib import Path
 import json
 import os
@@ -14,11 +14,11 @@ with open(_CONFIG_PATH, "rb") as reader:
     config: dict = json.load(reader)
 
 
-def _get_path(name: str, *default: Union[str, Path]) -> Path:
+def _try_get_path(name: str, *default: Union[str, Path]) -> Optional[Path]:
     """
     Try to resolve a path from config.json.
     If fails, try to build a path with default arguments.
-    If fails again, raise a SystemExit Error
+    If fails again, returns none
     """
     path: Path = None
 
@@ -29,13 +29,26 @@ def _get_path(name: str, *default: Union[str, Path]) -> Path:
         path = Path(*default)
 
     if path is None or not path.exists():
-        raise SystemExit(
-            f"{name}: File not found '{path}'.\n\n"
-            "Configure it from '{CONFIG_PATH.resolve()}' or from an environement variable"
-        )
+        return None
 
     return path.resolve()
 
+
+def _get_path(name: str, *default: Union[str, Path]) -> Path:
+    """
+    Calls _try_get_path and raise a FileNotFoundError of the file can't be found.
+    Else, return the parsed path
+    """
+
+    path = _try_get_path(name, *default)
+
+    if path is None or not path.exists():
+        raise FileNotFoundError(
+            f"{name}: File not found '{path}'.\n"
+            f"Configure it from '{_CONFIG_PATH.resolve()}' or from an environement variable"
+        )
+
+    return path
 
 def _get_env(name: str) -> str:
     """
@@ -51,5 +64,5 @@ def _get_env(name: str) -> str:
 
 PATH_7D2D = _get_path("PATH_7D2D", _get_env("PATH_7D2D"))
 PATH_7D2D_USER = _get_path("PATH_7D2D", _get_env("APPDATA"), "7DaysToDie")
-PATH_7D2D_SERVER = _get_path("PATH_7D2D_SERVER", PATH_7D2D, "../7 Days to Die Dedicated Server/7DaysToDieServer.exe")
+PATH_7D2D_SERVER = _try_get_path("PATH_7D2D_SERVER", PATH_7D2D, "../7 Days to Die Dedicated Server/7DaysToDieServer.exe")
 PATH_PREFABS = _get_path("PATH_PREFABS", PATH_7D2D_USER, "LocalPrefabs")
