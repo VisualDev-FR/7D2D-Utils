@@ -1,8 +1,8 @@
-import _click as click
+import click
 
-from commands.new import cmd_new
-from commands.update import cmd_update
-from commands.build import (
+from .commands.new import cmd_new
+from .commands.update import cmd_update
+from .commands.build import (
     cmd_infos,
     cmd_build,
     cmd_release,

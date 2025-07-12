@@ -11,10 +11,10 @@ import json
 import glob
 import os
 
-import _click as click
+import click
 
 from . import utils
-import config
+from .. import config
 
 
 def _return_code(command: str, quiet: bool = False) -> int:
@@ -24,7 +24,7 @@ def _return_code(command: str, quiet: bool = False) -> int:
 class SaveCleaningData:
 
     def __init__(self, world: str, save: str, hard: bool = False):
-        self.world  = world
+        self.world = world
         self.save = save
         self.hard = hard
 
@@ -166,7 +166,9 @@ class ModBuilder:
 
             builder = ModBuilder(dep)
 
-            print(f"build {builder.commit_hash[:8]} '{builder.mod_name}' {self._pending_modifications_count(builder.root_dir)}")
+            print(
+                f"build {builder.commit_hash[:8]} '{builder.mod_name}' {self._pending_modifications_count(builder.root_dir)}"
+            )
 
             builder.build(quiet=True)
 
@@ -352,7 +354,9 @@ class ModBuilder:
             for dep in dependencies:
                 writer.write(f"{dep.mod_name}={dep.commit_hash.__str__()}\n")
 
-        shutil.make_archive(f"{self.mod_name}-release-{combined_hash[:8]}", "zip", self.build_dir)
+        shutil.make_archive(
+            f"{self.mod_name}-release-{combined_hash[:8]}", "zip", self.build_dir
+        )
 
         print(f"build {combined_hash[:8]} done in {time.time() - start:.1f}s")
 

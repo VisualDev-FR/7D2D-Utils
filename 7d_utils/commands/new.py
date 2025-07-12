@@ -6,7 +6,7 @@ import shutil
 import os
 import re
 
-import _click as click
+import click
 
 
 MOD_NAME_PROP = "@MODNAME"

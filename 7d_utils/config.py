@@ -6,14 +6,6 @@ import json
 import os
 
 
-_CONFIG_PATH = Path(__file__, "../config.json").resolve()
-_README_PATH = Path(__file__, "../README.md").resolve()
-
-
-with open(_CONFIG_PATH, "rb") as reader:
-    config: dict = json.load(reader)
-
-
 def _try_get_path(name: str, *default: Union[str, Path]) -> Optional[Path]:
     """
     Try to resolve a path from config.json.
@@ -22,8 +14,8 @@ def _try_get_path(name: str, *default: Union[str, Path]) -> Optional[Path]:
     """
     path: Path = None
 
-    if name in config and config[name] is not None:
-        path = Path(config[name])
+    # if name in config and config[name] is not None:
+    #     path = Path(config[name])
 
     if path is None or not path.exists():
         path = Path(*default)
@@ -45,10 +37,11 @@ def _get_path(name: str, *default: Union[str, Path]) -> Path:
     if path is None or not path.exists():
         raise FileNotFoundError(
             f"{name}: File not found '{path}'.\n"
-            f"Configure it from '{_CONFIG_PATH.resolve()}' or from an environement variable"
+            f"Configure it from the environement variable"
         )
 
     return path
+
 
 def _get_env(name: str) -> str:
     """
@@ -57,7 +50,7 @@ def _get_env(name: str) -> str:
     env = os.environ.get(name)
 
     if env is None:
-        raise SystemExit(f"Missing env variable: '{name}', see '{_README_PATH}' for more details.")
+        raise SystemExit(f"Missing env variable: '{name}'")
 
     return env
 

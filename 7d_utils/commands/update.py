@@ -3,7 +3,7 @@ import http.client
 import subprocess
 import json
 
-import _click as click
+import click
 
 from . import utils
 
@@ -35,7 +35,6 @@ def _get_latest_commit() -> str | None:
     return commit_info["sha"]
 
 
-
 def is_up_to_date() -> bool:
     """
     Checks if the local repository is up to date with the latest remote commit.
@@ -55,4 +54,3 @@ def cmd_update():
     Fetches the latest version of the project from the remote Git repository.
     """
     subprocess.run(["git", "pull"])
-

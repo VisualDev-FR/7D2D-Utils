@@ -4,7 +4,7 @@ import xml.dom.minidom as minidom
 from xml.etree.ElementTree import Element
 from pathlib import Path
 
-import _click
+import click
 import lxml.etree as ET
 
 
@@ -26,10 +26,10 @@ def prettify_xml(element: Element, with_comments: bool = True) -> str:
     return pretty_element[22:]
 
 
-@_click.command
-@_click.argument("file", required=True)
-@_click.argument("request", required=True)
-@_click.option(
+@click.command
+@click.argument("file", required=True)
+@click.argument("request", required=True)
+@click.option(
     "--no-comments", is_flag=True, help="Enable this option to ignore comments."
 )
 def xpath(file: str, request: str, no_comments: bool) -> Element:
@@ -59,9 +59,9 @@ def xpath(file: str, request: str, no_comments: bool) -> Element:
         print(f"Bad request: {e.__repr__()}")
 
 
-@_click.command
-@_click.option("--name", type=str, required=False, help="Filter blocks by name")
-@_click.option(
+@click.command
+@click.option("--name", type=str, required=False, help="Filter blocks by name")
+@click.option(
     "--ls",
     is_flag=True,
     help="Enable this option to display all available blocks.",
@@ -85,7 +85,7 @@ def block(name: str, ls: bool):
         target_block = blocks_tree.find(f"./block[@name='{name}']")
 
     else:
-        raise _click.exceptions.BadParameter("name or xpath option must be specified.")
+        raise click.exceptions.BadParameter("name or xpath option must be specified.")
 
     if target_block is None:
         print(f"Not result for '{name}'")
@@ -94,9 +94,9 @@ def block(name: str, ls: bool):
     print(prettify_xml(target_block))
 
 
-@_click.command
-@_click.argument("file", required=True)
-@_click.option(
+@click.command
+@click.argument("file", required=True)
+@click.option(
     "-e",
     "--editor",
     default='""',
@@ -117,7 +117,7 @@ def reveal(file: str, editor: str):
     os.system(f'start {editor} "{absolute_path}"')
 
 
-@_click.command
+@click.command
 def ls_xml():
     """
     Display the list of all available xml files
@@ -132,9 +132,9 @@ def ls_xml():
     print("\n".join(xml_files))
 
 
-@_click.command
-@_click.argument("keyword")
-@_click.option("--search", is_flag=True)
+@click.command
+@click.argument("keyword")
+@click.option("--search", is_flag=True)
 def getlocal(keyword: str, search: bool):
     """
     Display translations for a given keyword from Localization.txt
